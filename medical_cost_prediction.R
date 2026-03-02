@@ -1,17 +1,8 @@
+#Upload data
 medical <- read.csv("medical_cost_prediction_dataset.csv", header=TRUE)
 medical 
 
-#Insurance Dummies
-medical$dummy_private <- ifelse(medical$insurance_type == "Private", 1, 0)
-medical$dummy_government <- ifelse(medical$insurance_type == "Government", 1, 0)
-medical$dummy_none <- ifelse(medical$insurance_type == "None", 1, 0)
-medical 
-
-#City Type Dummies 
-medical$dummy_semiurban <- ifelse(medical$city_type == "Semi-Urban", 1, 0)
-medical$dummy_urban <- ifelse(medical$city_type == "Urban", 1, 0)
-medical$dummy_rural <- ifelse(medical$city_type == "Rural", 1, 0)
-
+#Regression model 
 medical_reg <- lm(annual_medical_cost ~ ., data = medical)
 summary(medical_reg)
 
@@ -34,23 +25,11 @@ ks.test(standardize_r, "pnorm")
 library(car)
 durbinWatsonTest(medical_reg, alternative=c("two.sided"))
 
-library(forecast)
-medical_ts <- ts(medical, frequency = 1)
-medical_ts
-
-single_ts <- medical_ts[, "annual_medical_cost"]
-
-fit <- auto.arima(single_ts)
-forecast_results <- forecast(fit, h=12)
-
-forecast_results
-plot(forecast_results)
-
+#Split data into train and test 
 medical_train <- medical[1:3999, ]
 medical_test <- medical[4000:5000, ]
 
 #Create labels for training and test data
-
 medical_train_labels <- medical[1:3999, ]
 medical_test_labels <- medical[4000:5000, ]
 
@@ -58,6 +37,7 @@ medical_test_labels <- medical[4000:5000, ]
 model <- lm(annual_medical_cost ~ ., data = medical_train)
 summary(model)
 
+#Test model on a new patient 
 predictions <- predict(model, newdata = medical_test)
 head(predictions)
 predictions
@@ -73,3 +53,4 @@ test_case <- data.frame(age = 70, gender = 'Female', bmi = 32.0, smoker = 'Yes',
 predicted_price <- predict(model, newdata = test_case)
 
 predicted_price
+
